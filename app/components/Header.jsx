@@ -1,13 +1,15 @@
 import { View, Text, Image, StyleSheet } from "react-native";
 import { COLORS } from "../styles/colors";
+import { useCart } from "../context/CartContext";
 import logo from "../assets/logo.png";
 
 export default function Header({
-  itensCarrinho,
   title = "Dio's Hamburgueria",
   subtitle = "Feito na Parrilla 🔥",
   showCart = true,
 }) {
+  const { qtdItensCarrinho } = useCart();
+
   return (
     <View style={styles.container}>
       <View style={styles.brand}>
@@ -19,7 +21,16 @@ export default function Header({
       </View>
 
       {showCart && (
-        <Text style={styles.cart}>🛒 {itensCarrinho ?? 0}</Text>
+        <View style={styles.cartWrapper}>
+          <Text style={styles.cart}>🛒</Text>
+          {qtdItensCarrinho > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {qtdItensCarrinho > 9 ? "9+" : qtdItensCarrinho}
+              </Text>
+            </View>
+          )}
+        </View>
       )}
     </View>
   );
@@ -32,32 +43,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-
   brand: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   logo: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     resizeMode: "contain",
-    marginRight: 14,
+    marginRight: 12,
   },
-
   title: {
     color: COLORS.gold,
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "bold",
   },
-
   subtitle: {
     color: COLORS.gray,
     fontSize: 12,
+    marginTop: 1,
   },
-
+  cartWrapper: {
+    position: "relative",
+  },
   cart: {
-    color: COLORS.white,
-    fontSize: 18,
+    fontSize: 26,
+  },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -6,
+    backgroundColor: COLORS.gold,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: "#111",
+    fontSize: 10,
+    fontWeight: "bold",
   },
 });
