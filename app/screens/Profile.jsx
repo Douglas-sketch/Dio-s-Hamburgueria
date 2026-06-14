@@ -8,7 +8,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
+  Image,
+  Alert,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../styles/colors";
 import Header from "../components/Header";
@@ -23,6 +26,33 @@ function getIniciais(nome) {
 export default function Profile({ usuario, setUsuario }) {
   const [mostraModal, setMostraModal] = useState(false);
   const [tempData, setTempData] = useState({ ...(usuario || {}) });
+
+  async function selecionarAvatar() {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      Alert.alert(
+        "Permissão negada",
+        "Precisamos de permissão para acessar suas fotos."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      const selectedImageUri = result.assets?.[0]?.uri;
+      if (selectedImageUri) {
+        setUsuario({ ...usuario, avatar: selectedImageUri });
+        setTempData((prev) => ({ ...prev, avatar: selectedImageUri }));
+      }
+    }
+  }
 
   function abrirEdicao() {
     setTempData({ ...(usuario || {}) });
@@ -42,11 +72,19 @@ export default function Profile({ usuario, setUsuario }) {
         <Header title="Meu Perfil" subtitle="Seus dados" showCart={false} />
 
         <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {getIniciais(usuario?.nome)}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.avatar}
+            onPress={selecionarAvatar}
+            activeOpacity={0.75}
+          >
+            {usuario?.avatar ? (
+              <Image source={{ uri: usuario.avatar }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {getIniciais(usuario?.nome)}
+              </Text>
+            )}
+          </TouchableOpacity>
           <TouchableOpacity style={styles.editAvatarBtn} onPress={abrirEdicao}>
             <Ionicons name="pencil" size={13} color="#111" />
           </TouchableOpacity>
@@ -201,6 +239,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gold,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   avatarText: {
     color: "#111",

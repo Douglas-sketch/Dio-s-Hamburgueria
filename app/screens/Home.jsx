@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView, ScrollView, View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../styles/colors";
 import { products } from "../data/products";
-import { useCart } from "../context/CartContext";
 import Header from "../components/Header";
 import SearchBar from "../components/SearchBar";
 import PromoBanner from "../components/PromoBanner";
@@ -12,7 +12,6 @@ import ProductCard from "../components/ProductCard";
 export default function Home() {
   const [busca, setBusca] = useState("");
   const [categoria, setCategoria] = useState("todos");
-  const { adicionarAoCarrinho } = useCart();
 
   const produtosFiltrados = products.filter((produto) => {
     const nomeValido = produto.nome
@@ -28,15 +27,20 @@ export default function Home() {
       <ScrollView contentContainerStyle={styles.content}>
         <Header />
         <SearchBar busca={busca} setBusca={setBusca} />
-        <PromoBanner />
+        {!busca && <PromoBanner />}
         <CategoryList categoria={categoria} setCategoria={setCategoria} />
-        {produtosFiltrados.map((produto) => (
-          <ProductCard
-            key={produto.id}
-            produto={produto}
-            adicionarAoCarrinho={adicionarAoCarrinho}
-          />
-        ))}
+
+        {produtosFiltrados.length === 0 ? (
+          <View style={styles.emptySearch}>
+            <Ionicons name="search-outline" size={48} color={COLORS.border} />
+            <Text style={styles.emptyTitle}>Nenhum produto encontrado</Text>
+            <Text style={styles.emptyText}>Tente buscar por outro nome</Text>
+          </View>
+        ) : (
+          produtosFiltrados.map((produto) => (
+            <ProductCard key={produto.id} produto={produto} />
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -50,5 +54,19 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingBottom: 90,
+  },
+  emptySearch: {
+    alignItems: "center",
+    paddingVertical: 50,
+    gap: 10,
+  },
+  emptyTitle: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  emptyText: {
+    color: COLORS.gray,
+    fontSize: 13,
   },
 });
